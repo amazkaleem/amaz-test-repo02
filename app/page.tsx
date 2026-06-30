@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Define the presets and their custom impact descriptions
 const IMPACT_TEMPLATES: Record<number, string> = {
@@ -12,6 +13,10 @@ const IMPACT_TEMPLATES: Record<number, string> = {
 };
 
 export default function App() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   // 1. STATE MANAGEMENT
   const [frequency, setFrequency] = useState<"MONTHLY" | "ONE-TIME">("MONTHLY");
   const [selectedAmount, setSelectedAmount] = useState<number | "OTHER">(50);
@@ -43,22 +48,17 @@ export default function App() {
   // For GoFundMe Pro widgets, clicking can trigger the SDK via specific data attributes
   const campaignId = process.env.NEXT_PUBLIC_CAMPAIGN_ID || ""; // This represents your "Copy campaign parameter" value
 
-  // Safe handler that doesn't trigger unless configured
   const handleDonateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+    // 1. Clone current search parameters without breaking existing ones
+    const params = new URLSearchParams(searchParams.toString());
 
-    if (typeof window !== "undefined") {
-      // 1. Parse the current URL safely
-      const currentUrl = new URL(window.location.href);
+    // 2. Set your dynamic parameters
+    params.set("campaign", campaignId);
+    params.set("frequency", frequency.toLowerCase());
+    params.set("amount", activeAmount.toString());
 
-      // 2. Dynamically set all three parameters
-      currentUrl.searchParams.set("campaign", campaignId);
-      currentUrl.searchParams.set("frequency", frequency.toLowerCase()); // Converts "MONTHLY" to "monthly"
-      currentUrl.searchParams.set("amount", activeAmount.toString()); // Converts number to string
-
-      // 3. Redirect the browser to the newly constructed URL
-      window.location.href = currentUrl.toString();
-    }
+    // 3. Perform a clean, client-side transition without a page reload
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -184,10 +184,6 @@ export default function App() {
           */}
           <button
             onClick={handleDonateClick}
-            data-gofundme-trigger
-            data-campaign-id={campaignId}
-            data-amount={activeAmount}
-            data-frequency={frequency.toLowerCase()}
             className="w-full bg-[#10B981] hover:bg-[#059669] text-white py-4 px-6 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-xl active:scale-[0.99] transition-all duration-150 uppercase"
           >
             Donate ${activeAmount} {frequency}
