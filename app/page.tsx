@@ -21,9 +21,7 @@ export default function App() {
 
   // 2. DYNAMIC DERIVED VARIABLES
   const activeAmount =
-    selectedAmount === "OTHER"
-      ? parseFloat(customAmount) || 0
-      : selectedAmount;
+    selectedAmount === "OTHER" ? parseFloat(customAmount) || 0 : selectedAmount;
 
   // Generate impact sentence dynamically
   const getImpactDescription = () => {
@@ -31,7 +29,10 @@ export default function App() {
       return "Select or enter an amount to see your direct impact.";
     }
     // Match exact preset description
-    if (typeof selectedAmount === "number" && IMPACT_TEMPLATES[selectedAmount]) {
+    if (
+      typeof selectedAmount === "number" &&
+      IMPACT_TEMPLATES[selectedAmount]
+    ) {
       return IMPACT_TEMPLATES[selectedAmount];
     }
     // Dynamic description for other/custom inputs
@@ -40,18 +41,24 @@ export default function App() {
 
   // Determine GoFundMe custom tracking parameters (Example values, replace with your actual values)
   // For GoFundMe Pro widgets, clicking can trigger the SDK via specific data attributes
-  const campaignId = process.env.NEXT_PUBLIC_CAMPAIGN_ID; // This represents your "Copy campaign parameter" value
+  const campaignId = process.env.NEXT_PUBLIC_CAMPAIGN_ID || ""; // This represents your "Copy campaign parameter" value
 
   // Safe handler that doesn't trigger unless configured
   const handleDonateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // If the widget script is fully loaded, GoFundMe Pro usually listens to elements 
-    // with certain data attributes automatically, meaning this button handles opening the overlay natively.
-    console.log(`Donation intent: $${activeAmount} (${frequency})`);
-    
-    // Fallback info notice for developers in case GoFundMe JS isn't mounted globally in local testing yet
-    // if (typeof window !== "undefined" && !(window as Window & { GoFundMePro?: unknown }).GoFundMePro) {
-    //   console.warn("GoFundMe SDK script is declared, but not fully initiated. Once deployed, this opens the billing popup.");
-    // }
+    e.preventDefault();
+
+    if (typeof window !== "undefined") {
+      // 1. Parse the current URL safely
+      const currentUrl = new URL(window.location.href);
+
+      // 2. Dynamically set all three parameters
+      currentUrl.searchParams.set("campaign", campaignId);
+      currentUrl.searchParams.set("frequency", frequency.toLowerCase()); // Converts "MONTHLY" to "monthly"
+      currentUrl.searchParams.set("amount", activeAmount.toString()); // Converts number to string
+
+      // 3. Redirect the browser to the newly constructed URL
+      window.location.href = currentUrl.toString();
+    }
   };
 
   return (
@@ -73,7 +80,6 @@ export default function App() {
         <div className="absolute inset-0 bg-[#0c5c75] rounded-3xl translate-x-2 translate-y-2 z-0" />
 
         <div className="relative bg-white text-gray-900 rounded-3xl p-6 md:p-8 shadow-2xl border border-gray-100 z-10">
-          
           {/* HEADER SECTION */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-extrabold tracking-tight text-[#0F172A]">
@@ -162,7 +168,9 @@ export default function App() {
           {/* DYNAMIC IMPACT DESCRIPTION */}
           <div className="min-h-[48px] flex items-center justify-center text-center mb-6 px-2">
             <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              <span className="font-extrabold text-gray-900">${activeAmount}</span>{" "}
+              <span className="font-extrabold text-gray-900">
+                ${activeAmount}
+              </span>{" "}
               {getImpactDescription()}
             </p>
           </div>
@@ -189,20 +197,26 @@ export default function App() {
           <div className="mt-8 pt-6 border-t border-gray-100">
             {/* Range Bar */}
             <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden mb-3">
-              <div 
+              <div
                 className="h-full bg-[#0EA5E9] rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${Math.min((schoolsBuilt / targetSchools) * 100, 100)}%` }}
+                style={{
+                  width: `${Math.min((schoolsBuilt / targetSchools) * 100, 100)}%`,
+                }}
               />
             </div>
             {/* Readouts */}
             <div className="flex justify-between items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
               <div>
-                <span className="text-gray-800 text-sm font-extrabold mr-1">{schoolsBuilt}</span>
+                <span className="text-gray-800 text-sm font-extrabold mr-1">
+                  {schoolsBuilt}
+                </span>
                 Schools Built
               </div>
               <div>
                 Goal
-                <span className="text-gray-800 text-sm font-extrabold ml-1">{targetSchools.toLocaleString()}</span>
+                <span className="text-gray-800 text-sm font-extrabold ml-1">
+                  {targetSchools.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
@@ -215,7 +229,6 @@ export default function App() {
               GOFUNDME PRO EMBEDDED FORM
             </p>
           </div>
-
         </div>
       </div>
     </main>
