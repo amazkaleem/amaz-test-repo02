@@ -43,7 +43,7 @@ export default function App() {
   // For GoFundMe Pro widgets, clicking can trigger the SDK via specific data attributes
   const campaignId = process.env.NEXT_PUBLIC_CAMPAIGN_ID || ""; // This represents your "Copy campaign parameter" value
 
-  const handleDonateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleDonateClick = () => {
 
     if (typeof window !== "undefined") {
       // 1. Parse the current URL safely
