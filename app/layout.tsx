@@ -30,7 +30,7 @@ export default function RootLayout({
     >
       <head>
         <Script
-          src={process.env.NEXT_PUBLIC_INSTALL_URL}
+          src={process.env.INSTALL_URL}
           strategy="beforeInteractive"
         />
       </head>
