@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // Define the presets and their custom impact descriptions
 const IMPACT_TEMPLATES: Record<number, string> = {
@@ -13,15 +12,11 @@ const IMPACT_TEMPLATES: Record<number, string> = {
 };
 
 export default function App() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   // 1. STATE MANAGEMENT
   const [frequency, setFrequency] = useState<"MONTHLY" | "ONE-TIME">("MONTHLY");
   const [selectedAmount, setSelectedAmount] = useState<number | "OTHER">(50);
   const [customAmount, setCustomAmount] = useState<string>("");
-  const [schoolsBuilt, setSchoolsBuilt] = useState<number>(67); // Visual context
+  const schoolsBuilt = 67;
   const targetSchools = 1000;
 
   // 2. DYNAMIC DERIVED VARIABLES
@@ -49,37 +44,30 @@ export default function App() {
   const campaignId = process.env.NEXT_PUBLIC_CAMPAIGN_ID || ""; // This represents your "Copy campaign parameter" value
 
   const handleDonateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // 1. Clone current search parameters without breaking existing ones
-    const params = new URLSearchParams(searchParams.toString());
 
-    // 2. Set your dynamic parameters
-    params.set("campaign", campaignId);
-    params.set("frequency", frequency.toLowerCase());
-    params.set("amount", activeAmount.toString());
+    if (typeof window !== "undefined") {
+      // 1. Parse the current URL safely
+      const currentUrl = new URL(window.location.href);
 
-    // 3. Perform a clean, client-side transition without a page reload
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      // 2. Dynamically set all three parameters
+      currentUrl.searchParams.set("campaign", campaignId);
+      currentUrl.searchParams.set("frequency", frequency.toLowerCase()); // Converts "MONTHLY" to "monthly"
+      currentUrl.searchParams.set("amount", activeAmount.toString()); // Converts number to string
+
+      // 3. Redirect the browser to the newly constructed URL
+      window.location.href = currentUrl.toString();
+    }
   };
 
   return (
     <main className="min-h-screen bg-[#111827] flex items-center justify-center p-4 antialiased">
-      {/* =========================================
-        STEP 1: INSTALL SNIPPET (GoFundMe Pro)
-        =========================================
-        This loads the GoFundMe widget code securely in the background. 
-        Replace the "src" with the exact JS file URL located inside the snippet you copied in image_473ebd.png.
-        Example shape: https://js.gofundme.com/v3/embed.js 
-      */}
-
-      {/* =========================================
-        CONTAINER CARD (Tailwind CSS matching design)
-        =========================================
-      */}
-      <div className="relative w-full max-w-[440px]">
+      {/* Changed max-w-110 to an exact arbitrary value max-w-[400px] to constrain widget size */}
+      <div className="relative w-full max-w-[400px]">
         {/* Aesthetic 3D shadow effect (dark teal offset border) */}
-        <div className="absolute inset-0 bg-[#0c5c75] rounded-3xl translate-x-2 translate-y-2 z-0" />
+        <div className="absolute inset-0 bg-[#0c5c75] rounded-3xl translate-x-3 translate-y-3 z-0" />
 
-        <div className="relative bg-white text-gray-900 rounded-3xl p-6 md:p-8 shadow-2xl border border-gray-100 z-10">
+        {/* Removed md:p-8 to keep the padding tight and proportional like the screenshot */}
+        <div className="relative bg-white text-gray-900 rounded-3xl p-6 shadow-2xl border-2 border-black z-10">
           {/* HEADER SECTION */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-extrabold tracking-tight text-[#0F172A]">
@@ -94,10 +82,10 @@ export default function App() {
           </div>
 
           {/* FREQUENCY SELECTOR */}
-          <div className="bg-[#E2E8F0] p-1.5 rounded-2xl flex mb-6">
+          <div className="bg-[#E2E8F0] p-1.5 rounded-lg flex mb-6">
             <button
               onClick={() => setFrequency("MONTHLY")}
-              className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
+              className={`flex-1 py-3 text-sm font-bold rounded-sm transition-all duration-200 ${
                 frequency === "MONTHLY"
                   ? "bg-white text-[#0F172A] shadow-sm"
                   : "text-gray-500 hover:text-gray-900"
@@ -107,7 +95,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setFrequency("ONE-TIME")}
-              className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-200 ${
+              className={`flex-1 py-3 text-sm font-bold rounded-sm transition-all duration-200 ${
                 frequency === "ONE-TIME"
                   ? "bg-white text-[#0F172A] shadow-sm"
                   : "text-gray-500 hover:text-gray-900"
@@ -126,10 +114,10 @@ export default function App() {
                   setSelectedAmount(amount);
                   setCustomAmount("");
                 }}
-                className={`py-4 px-2 rounded-xl text-lg font-bold border-2 transition-all duration-200 ${
+                className={`py-4 px-2 rounded-sm text-lg font-bold border-2 transition-all duration-200 ${
                   selectedAmount === amount
-                    ? "border-[#10B981] bg-[#ECFDF5] text-[#065F46] scale-[1.02]"
-                    : "border-gray-200 bg-white text-gray-800 hover:border-gray-300"
+                    ? "border-[#2BBF96] bg-[#e6f7f2] text-black scale-[1.02]"
+                    : "border-gray-200 bg-white text-gray-800 hover:border-black"
                 }`}
               >
                 ${amount}
@@ -138,10 +126,10 @@ export default function App() {
 
             <button
               onClick={() => setSelectedAmount("OTHER")}
-              className={`py-4 px-2 rounded-xl text-md font-bold border-2 transition-all duration-200 ${
+              className={`py-4 px-2 rounded-sm text-md font-bold border-2 transition-all duration-200 ${
                 selectedAmount === "OTHER"
-                  ? "border-[#10B981] bg-[#ECFDF5] text-[#065F46] scale-[1.02]"
-                  : "border-gray-200 bg-white text-gray-800 hover:border-gray-300"
+                  ? "border-[#2BBF96] bg-[#e6f7f2] text-black scale-[1.02]"
+                  : "border-gray-200 bg-white text-gray-800 hover:border-black"
               }`}
             >
               OTHER
@@ -166,7 +154,7 @@ export default function App() {
           )}
 
           {/* DYNAMIC IMPACT DESCRIPTION */}
-          <div className="min-h-[48px] flex items-center justify-center text-center mb-6 px-2">
+          <div className="min-h-12 flex items-center justify-center text-center mb-6 px-2">
             <p className="text-sm font-medium text-gray-600 leading-relaxed">
               <span className="font-extrabold text-gray-900">
                 ${activeAmount}
@@ -175,16 +163,13 @@ export default function App() {
             </p>
           </div>
 
-          {/* =========================================
-            PRIMARY CALL TO ACTION BUTTON
-            =========================================
-            This button leverages custom GoFundMe data-attributes 
-            so the install snippet script automatically hooks transactions.
-            We pass dynamic parameters using standard standard patterns.
-          */}
+          {/* UPGRADED 3D ACTION BUTTON */}
           <button
             onClick={handleDonateClick}
-            className="w-full bg-[#10B981] hover:bg-[#059669] text-white py-4 px-6 rounded-2xl font-bold text-lg tracking-wide shadow-lg hover:shadow-xl active:scale-[0.99] transition-all duration-150 uppercase"
+            className="w-full bg-[#2BBF96] border border-[#2BBF96] text-white py-4 px-6 rounded-sm font-extrabold text-xl tracking-wide uppercase transition-all duration-200 ease-out transform
+              shadow-[0_4px_0_color-mix(in_srgb,#10B981_62%,black)]
+              hover:bg-[#2dc99d]/90 hover:border-[#2dc99d]/90 hover:-translate-y-1 hover:shadow-[0_7px_0_color-mix(in_srgb,#10B981_62%,black)]
+              active:translate-y-0.5 active:shadow-[0_2px_0_color-mix(in_srgb,#10B981_62%,black)]"
           >
             Donate ${activeAmount} {frequency}
           </button>
